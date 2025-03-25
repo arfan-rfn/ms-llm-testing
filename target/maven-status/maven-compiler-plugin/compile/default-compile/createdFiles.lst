@@ -1,2 +1,8 @@
+com/example/demo/controller/TaskController.class
 com/example/demo/DemoApplication.class
 com/example/demo/controller/HelloController.class
+com/example/demo/model/Task.class
+com/example/demo/repository/TaskRepository.class
+com/example/demo/model/TaskStatus.class
+com/example/demo/service/TaskService.class
+com/example/demo/model/TaskPriority.class

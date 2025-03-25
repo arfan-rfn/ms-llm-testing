@@ -1,2 +1,8 @@
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/model/Task.java
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/service/TaskService.java
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/model/TaskStatus.java
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/repository/TaskRepository.java
 /Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/DemoApplication.java
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/controller/TaskController.java
+/Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/model/TaskPriority.java
 /Users/rfnmac/Documents/research/llm-testing/java-llm/src/main/java/com/example/demo/controller/HelloController.java
