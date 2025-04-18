@@ -4,14 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.http.ResponseEntity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
+import static org.hamcrest.Matchers.*;
+
+import com.yourpackage.model.Order;
+import com.yourpackage.controller.OrderController;
+import com.yourpackage.service.OrderService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -20,46 +23,48 @@ public class OrderControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @MockBean
-    private OrderRepository orderRepository;
+    private OrderService orderService;
 
     @Test
     public void updateOrderStatus_Success() throws Exception {
         Long orderId = 1L;
         String newStatus = "SHIPPED";
-        Order existingOrder = new Order(orderId, "PENDING");
-        Order updatedOrder = new Order(orderId, newStatus);
+        Order updatedOrder = new Order();
+        updatedOrder.setId(orderId);
+        updatedOrder.setStatus(newStatus);
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existingOrder));
-        when(orderRepository.save(any(Order.class))).thenReturn(updatedOrder);
+        when(orderService.updateOrderStatus(orderId, newStatus))
+            .thenReturn(ResponseEntity.ok(updatedOrder));
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/orders/{id}/status", orderId)
-                .param("status", newStatus))
+        mockMvc.perform(patch("/api/orders/{id}/status", orderId)
+                .param("status", newStatus)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(orderId))
-                .andExpect(jsonPath("$.status").value(newStatus));
+                .andExpect(jsonPath("$.id", is(orderId.intValue())))
+                .andExpect(jsonPath("$.status", is(newStatus)));
     }
 
     @Test
-    public void updateOrderStatus_OrderNotFound() throws Exception {
-        Long orderId = 99L;
+    public void updateOrderStatus_NotFound() throws Exception {
+        Long orderId = 999L;
         String newStatus = "SHIPPED";
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+        when(orderService.updateOrderStatus(orderId, newStatus))
+            .thenReturn(ResponseEntity.notFound().build());
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/orders/{id}/status", orderId)
-                .param("status", newStatus))
+        mockMvc.perform(patch("/api/orders/{id}/status", orderId)
+                .param("status", newStatus)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    public void updateOrderStatus_MissingStatusParameter() throws Exception {
+    public void updateOrderStatus_MissingStatusParam() throws Exception {
         Long orderId = 1L;
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/orders/{id}/status", orderId))
+        mockMvc.perform(patch("/api/orders/{id}/status", orderId)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
@@ -67,12 +72,13 @@ public class OrderControllerTest {
     public void updateOrderStatus_InvalidStatus() throws Exception {
         Long orderId = 1L;
         String invalidStatus = "INVALID_STATUS";
-        Order existingOrder = new Order(orderId, "PENDING");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderService.updateOrderStatus(orderId, invalidStatus))
+            .thenThrow(new IllegalArgumentException("Invalid status"));
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/orders/{id}/status", orderId)
-                .param("status", invalidStatus))
+        mockMvc.perform(patch("/api/orders/{id}/status", orderId)
+                .param("status", invalidStatus)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 }

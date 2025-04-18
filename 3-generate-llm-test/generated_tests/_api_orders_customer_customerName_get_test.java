@@ -24,62 +24,47 @@ public class OrderControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private OrderService orderService;
+    private OrderController orderController;
 
     @Test
     public void testGetOrdersByCustomerName_Success() throws Exception {
-        // Arrange
-        String customerName = "JohnDoe";
-        Order order1 = new Order(1L, customerName, "Product1", 2);
-        Order order2 = new Order(2L, customerName, "Product2", 1);
+        Order order1 = new Order(1L, "John Doe", "Product A");
+        Order order2 = new Order(2L, "John Doe", "Product B");
         List<Order> orders = Arrays.asList(order1, order2);
 
-        when(orderService.getOrdersByCustomerName(customerName))
+        when(orderController.getOrdersByCustomerName("John Doe"))
             .thenReturn(new ResponseEntity<>(orders, HttpStatus.OK));
 
-        // Act & Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/{customerName}", customerName))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$", hasSize(2)))
-               .andExpect(jsonPath("$[0].customerName", is(customerName)))
-               .andExpect(jsonPath("$[1].customerName", is(customerName)));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/John Doe"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].customerName", is("John Doe")))
+            .andExpect(jsonPath("$[1].customerName", is("John Doe")));
     }
 
     @Test
     public void testGetOrdersByCustomerName_EmptyResult() throws Exception {
-        // Arrange
-        String customerName = "NonExistentCustomer";
-        
-        when(orderService.getOrdersByCustomerName(customerName))
+        when(orderController.getOrdersByCustomerName("Unknown"))
             .thenReturn(new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK));
 
-        // Act & Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/{customerName}", customerName))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$", hasSize(0)));
-    }
-
-    @Test
-    public void testGetOrdersByCustomerName_InternalServerError() throws Exception {
-        // Arrange
-        String customerName = "JohnDoe";
-        
-        when(orderService.getOrdersByCustomerName(customerName))
-            .thenThrow(new RuntimeException("Database error"));
-
-        // Act & Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/{customerName}", customerName))
-               .andExpect(status().isInternalServerError());
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/Unknown"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void testGetOrdersByCustomerName_InvalidCustomerName() throws Exception {
-        // Arrange
-        String customerName = " ";
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/ "))
+            .andExpect(status().isBadRequest());
+    }
 
-        // Act & Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/{customerName}", customerName))
-               .andExpect(status().isBadRequest());
+    @Test
+    public void testGetOrdersByCustomerName_InternalServerError() throws Exception {
+        when(orderController.getOrdersByCustomerName("ErrorCase"))
+            .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/customer/ErrorCase"))
+            .andExpect(status().isInternalServerError());
     }
 }
 
@@ -87,24 +72,23 @@ class Order {
     private Long id;
     private String customerName;
     private String productName;
-    private int quantity;
 
-    public Order(Long id, String customerName, String productName, int quantity) {
+    public Order(Long id, String customerName, String productName) {
         this.id = id;
         this.customerName = customerName;
         this.productName = productName;
-        this.quantity = quantity;
     }
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public String getCustomerName() { return customerName; }
-    public String getProductName() { return productName; }
-    public int getQuantity() { return quantity; }
-}
+    public Long getId() {
+        return id;
+    }
 
-// Mock service interface
-interface OrderService {
-    ResponseEntity<List<Order>> getOrdersByCustomerName(String customerName);
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
 }
 ```

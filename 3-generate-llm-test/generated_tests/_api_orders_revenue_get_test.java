@@ -28,8 +28,8 @@ public class OrderControllerTest {
         when(orderService.calculateTotalRevenue()).thenReturn(expectedRevenue);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/revenue"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(String.valueOf(expectedRevenue)));
+               .andExpect(status().isOk())
+               .andExpect(content().string(String.valueOf(expectedRevenue)));
     }
 
     @Test
@@ -37,7 +37,7 @@ public class OrderControllerTest {
         when(orderService.calculateTotalRevenue()).thenThrow(new RuntimeException("Database error"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/revenue"))
-                .andExpect(status().isInternalServerError());
+               .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -45,8 +45,8 @@ public class OrderControllerTest {
         when(orderService.calculateTotalRevenue()).thenReturn(0.0);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders/revenue"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("0.0"));
+               .andExpect(status().isOk())
+               .andExpect(content().string("0.0"));
     }
 }
 ```

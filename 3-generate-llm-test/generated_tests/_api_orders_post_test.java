@@ -8,9 +8,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.ResponseEntity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -23,16 +24,17 @@ public class OrderControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private OrderService orderService;
+    private OrderController orderController;
 
     @Test
-    public void createOrder_Success() throws Exception {
+    public void testCreateOrder_Success() throws Exception {
         Order order = new Order();
         order.setId(1L);
         order.setCustomerName("John Doe");
-        order.setTotalAmount(100.0);
+        order.setTotalAmount(100.50);
 
-        when(orderService.createOrder(any(Order.class))).thenReturn(ResponseEntity.ok(order));
+        ResponseEntity<Order> responseEntity = ResponseEntity.ok(order);
+        when(orderController.createOrder(any(Order.class))).thenReturn(responseEntity);
 
         mockMvc.perform(post("/api/orders")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -40,11 +42,11 @@ public class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.customerName").value("John Doe"))
-                .andExpect(jsonPath("$.totalAmount").value(100.0));
+                .andExpect(jsonPath("$.totalAmount").value(100.50));
     }
 
     @Test
-    public void createOrder_ValidationError() throws Exception {
+    public void testCreateOrder_ValidationError() throws Exception {
         Order invalidOrder = new Order();
         invalidOrder.setCustomerName("");
         invalidOrder.setTotalAmount(-10.0);
@@ -56,13 +58,13 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void createOrder_ServiceError() throws Exception {
+    public void testCreateOrder_InternalServerError() throws Exception {
         Order order = new Order();
-        order.setCustomerName("John Doe");
-        order.setTotalAmount(100.0);
+        order.setCustomerName("Jane Smith");
+        order.setTotalAmount(200.75);
 
-        when(orderService.createOrder(any(Order.class)))
-                .thenThrow(new RuntimeException("Service exception"));
+        when(orderController.createOrder(any(Order.class)))
+                .thenThrow(new RuntimeException("Internal Server Error"));
 
         mockMvc.perform(post("/api/orders")
                 .contentType(MediaType.APPLICATION_JSON)
