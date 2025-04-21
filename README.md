@@ -103,8 +103,8 @@ _All of these can be overridden via CLI flags (see “Usage” below)._
 
 ## 🗺️ Next Steps
 
-- **Adjust** post‑processing regexes in `springboot_test_generator.py` for your code style.
-- **Extend** support for other patterns or edge‑cases in your micro‑services.
+- **Adjust** post‑processing regexes in `springboot_test_generator.py` for code style.
+- **Extend** support for other patterns or edge‑cases in micro‑services.
 - **Enable** full integration tests with `--include-integration`.
 
 Enjoy your auto‑generated, compile‑ready tests! 🚀
